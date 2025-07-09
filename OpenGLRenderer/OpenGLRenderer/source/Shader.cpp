@@ -1,4 +1,5 @@
 #include "Shader.h"
+#include "glm/gtc/type_ptr.hpp"
 
 #include <fstream>
 #include <string>
@@ -70,6 +71,10 @@ void Shader::SetInt(const char* name, int value) const {
 
 void Shader::SetFloat(const char* name, float value) const {
 	glUniform1f(glGetUniformLocation(programId, name), value);
+}
+
+void Shader::SetMat4(const char* name, const glm::mat4& value) const {
+	glUniformMatrix4fv(glGetUniformLocation(programId, name), 1, GL_FALSE, &value[0][0]);
 }
 
 bool Shader::CheckShaderCompilation(GLuint shader, const char* identifier) {
