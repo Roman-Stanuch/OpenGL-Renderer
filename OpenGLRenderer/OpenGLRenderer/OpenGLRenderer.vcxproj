@@ -133,6 +133,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="source\Camera.cpp" />
+    <ClCompile Include="source\Geometry.cpp" />
     <ClCompile Include="source\glad.c" />
     <ClCompile Include="source\main.cpp" />
     <ClCompile Include="source\Shader.cpp" />
@@ -141,6 +142,7 @@
   <ItemGroup>
     <ClInclude Include="include\stb\stb_image.h" />
     <ClInclude Include="source\Camera.h" />
+    <ClInclude Include="source\Geometry.h" />
     <ClInclude Include="source\Shader.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

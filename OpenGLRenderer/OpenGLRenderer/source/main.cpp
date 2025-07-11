@@ -6,6 +6,7 @@
 
 #include "Shader.h"
 #include "Camera.h"
+#include "Geometry.h"
 
 #include <iostream>
 #include <cstdint>
@@ -22,55 +23,93 @@ float DeltaTime = 0.0f;
 float TimeLastFrame = 0.0f;
 
 GLFWwindow* InitalizeWindow();
-GLuint GetCubeVAO();
 GLuint GetTexture(const char* source, bool flip = true);
 void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
 void MouseMovementCallback(GLFWwindow* window, double xPos, double yPos);
 void MouseScrollCallback(GLFWwindow* window, double xOffset, double yOffset);
 void ProcessInput(GLFWwindow* window);
+void PrintErrors();
 
 int main() {
 	GLFWwindow* window = InitalizeWindow();
 	if (window == nullptr) {
 		return -1;
 	}
+	
+	// Models
+	GLuint containerVAO = GetContainerVAO();
+	glm::mat4 cubeModelMatrix = IDENTITY_4X4;
 
-	GLuint cubeVAO = GetCubeVAO();
-	GLuint crateTexture = GetTexture("textures/container.jpg");
+	GLuint lightCubeVAO = GetCubeVAO();
+	glm::mat4 lightModelMatrix = glm::translate(IDENTITY_4X4, glm::vec3(1.2f, 1.0f, 2.0f));
+	lightModelMatrix = glm::scale(lightModelMatrix, glm::vec3(0.2f));
+	glm::vec3 lightColor(1.0f, 1.0f, 1.0f);
+	
+	// Textures
+	GLuint containerTexture = GetTexture("textures/container.jpg");
 	GLuint awesomeFaceTexture = GetTexture("textures/awesomeface.png");
-	Shader shaderProgram("shaders/vertex.vert", "shaders/fragment.frag");
+
+	// Shaders
+	Shader containerShaderProgram("shaders/BasicTexture.vert", "shaders/BasicLighting.frag");
+	Shader lightShaderProgram("shaders/BasicColor.vert", "shaders/BasicColor.frag");
 
 	glfwSwapInterval(1);
 	glEnable(GL_DEPTH_TEST);
 
 	while (!glfwWindowShouldClose(window)) {
+		//
 		// Calculate DeltaTime
+		//
 		float currentTime = static_cast<float>(glfwGetTime());
 		DeltaTime = currentTime - TimeLastFrame;
 		TimeLastFrame = currentTime;
-
+		
+		//
 		// Input
+		//
 		ProcessInput(window);
-
+		
+		//
 		// Rendering
-		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+		//
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		shaderProgram.Use();
-		glm::mat4 model = glm::rotate(IDENTITY_4X4, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		shaderProgram.SetMat4("model", model);
+
 		glm::mat4 view = MainCamera.GetViewMatrix();
-		shaderProgram.SetMat4("view", view);
 		glm::mat4 projection = glm::perspective(glm::radians(MainCamera.GetZoom()), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f);
-		shaderProgram.SetMat4("projection", projection);
-		glBindVertexArray(cubeVAO);
-		glBindTextureUnit(0, crateTexture);
+
+		// Draw the container
+		containerShaderProgram.Use();
+		containerShaderProgram.SetMat4("view", view);
+		containerShaderProgram.SetMat4("projection", projection);
+		containerShaderProgram.SetVec3("lightColor", lightColor);
+
+		glBindVertexArray(containerVAO);
+		containerShaderProgram.SetMat4("model", cubeModelMatrix);
+		glBindTextureUnit(0, containerTexture);
 		glBindTextureUnit(1, awesomeFaceTexture);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
+	
+		// Draw the light
+		lightShaderProgram.Use();
+		lightShaderProgram.SetMat4("view", view);
+		lightShaderProgram.SetMat4("projection", projection);
+		lightShaderProgram.SetVec3("lightColor", lightColor);
 
+		glBindVertexArray(lightCubeVAO);
+		lightShaderProgram.SetMat4("model", lightModelMatrix);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		
+		//
 		// Swap Buffers and Poll Events
+		//
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
+	
+	PrintErrors();
+	glfwTerminate();
+	return 0;
 }
 
 GLFWwindow* InitalizeWindow() {
@@ -98,69 +137,6 @@ GLFWwindow* InitalizeWindow() {
 	}
 
 	return window;
-}
-
-GLuint GetCubeVAO() {
-	float vertices[] = {
-	-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-	 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-	-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-
-	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-	 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-	 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-	 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-	-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-
-	-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-	-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-	-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-	 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-	 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-	 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-	 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-	 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-	 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-
-	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-	-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
-	};
-
-	GLuint VAO;
-	glGenVertexArrays(1, &VAO);
-	glBindVertexArray(VAO);
-
-	GLuint VBO;
-	glGenBuffers(1, &VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
-
-	return VAO;
 }
 
 GLuint GetTexture(const char* source, bool flip) {
@@ -224,4 +200,11 @@ void ProcessInput(GLFWwindow* window) {
 		MainCamera.ProcessKeyboard(LEFT, DeltaTime);
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		MainCamera.ProcessKeyboard(RIGHT, DeltaTime);
+}
+
+void PrintErrors() {
+	GLenum error = glGetError();
+	if (error != GL_NO_ERROR) {
+		std::cout << "ERROR: GL error code " << error << "\n";
+	}
 }
