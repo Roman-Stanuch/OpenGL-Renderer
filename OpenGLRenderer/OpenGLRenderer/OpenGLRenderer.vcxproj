@@ -73,6 +73,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>.\include;$(IncludePath)</IncludePath>
     <LibraryPath>.\lib;$(LibraryPath)</LibraryPath>
+    <ExternalIncludePath>$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -108,6 +109,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -132,6 +134,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="include\IMGUI\imgui.cpp" />
+    <ClCompile Include="include\IMGUI\imgui_demo.cpp" />
+    <ClCompile Include="include\IMGUI\imgui_draw.cpp" />
+    <ClCompile Include="include\IMGUI\imgui_impl_glfw.cpp" />
+    <ClCompile Include="include\IMGUI\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="include\IMGUI\imgui_tables.cpp" />
+    <ClCompile Include="include\IMGUI\imgui_widgets.cpp" />
     <ClCompile Include="source\Camera.cpp" />
     <ClCompile Include="source\Geometry.cpp" />
     <ClCompile Include="source\glad.c" />
