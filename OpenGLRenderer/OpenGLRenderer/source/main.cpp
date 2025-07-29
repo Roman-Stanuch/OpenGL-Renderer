@@ -32,6 +32,7 @@ GLFWwindow* InitalizeWindow();
 GLuint GetTexture(const char* source, bool flip = true);
 void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
 void MouseMovementCallback(GLFWwindow* window, double xPos, double yPos);
+void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
 void MouseScrollCallback(GLFWwindow* window, double xOffset, double yOffset);
 void UpdateDeltaTime();
 void DrawGui();
@@ -48,10 +49,6 @@ int main() {
 	// Models
 	GLuint containerVAO = GetContainerVAO();
 	glm::mat4 containerModelMatrix = IDENTITY_4X4;
-
-	GLuint lightCubeVAO = GetCubeVAO();
-	glm::mat4 lightModelMatrix = glm::translate(IDENTITY_4X4, glm::vec3(1.2f, 1.0f, 2.0f));
-	lightModelMatrix = glm::scale(lightModelMatrix, glm::vec3(0.2f));
 	glm::vec3 lightColor(1.0f, 1.0f, 1.0f);
 	
 	// Textures
@@ -92,16 +89,6 @@ int main() {
 		glBindTextureUnit(0, containerTexture);
 		glBindTextureUnit(1, awesomeFaceTexture);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
-	
-		// Draw the light
-		lightShaderProgram.Use();
-		lightShaderProgram.SetMat4("view", view);
-		lightShaderProgram.SetMat4("projection", projection);
-		lightShaderProgram.SetVec3("lightColor", lightColor);
-
-		glBindVertexArray(lightCubeVAO);
-		lightShaderProgram.SetMat4("model", lightModelMatrix);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		// Draw the GUI
 		DrawGui();
@@ -135,6 +122,7 @@ GLFWwindow* InitalizeWindow() {
 	glfwMakeContextCurrent(window);
 	glfwSetFramebufferSizeCallback(window, FramebufferSizeCallback);
 	glfwSetCursorPosCallback(window, MouseMovementCallback);
+	glfwSetMouseButtonCallback(window, MouseButtonCallback);
 	glfwSetScrollCallback(window, MouseScrollCallback);
 
 
@@ -180,7 +168,7 @@ void FramebufferSizeCallback(GLFWwindow* window, int width, int height) {
 }
 
 void MouseMovementCallback(GLFWwindow* window, double xPos, double yPos) {
-	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) != GLFW_PRESS) {
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) != GLFW_PRESS) {
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 		FirstMouseMovement = true;
 		return;
@@ -204,6 +192,12 @@ void MouseMovementCallback(GLFWwindow* window, double xPos, double yPos) {
 	LastMouseY = yPosFloat;
 
 	MainCamera.ProcessMouseMovement(xOffset, yOffset, true);
+}
+
+void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
+	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+	}
 }
 
 void MouseScrollCallback(GLFWwindow* window, double xOffset, double yOffset) {
@@ -238,6 +232,8 @@ void DrawGui() {
 			std::cout << "Object Selected: " << ImGuiFileDialog::Instance()->GetCurrentFileName() << " at " << filePathName << "\n";
 			ImGuiFileDialog::Instance()->Close();
 		}
+
+		ImGuiFileDialog::Instance()->Close();
 	}
 
 	ImGui::End();
