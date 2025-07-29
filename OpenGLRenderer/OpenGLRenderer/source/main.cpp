@@ -1,6 +1,7 @@
 #include "IMGUI/imgui.h"
 #include "IMGUI/imgui_impl_glfw.h"
 #include "IMGUI/imgui_impl_opengl3.h"
+#include "ImGuiFileDialog/ImGuiFileDialog.h"
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
 #include "stb/stb_image.h"
@@ -16,6 +17,8 @@
 
 constexpr uint32_t SCREEN_WIDTH = 800;
 constexpr uint32_t SCREEN_HEIGHT = 600;
+constexpr uint32_t DIALOG_WIDTH = SCREEN_WIDTH * 0.8f;
+constexpr uint32_t DIALOG_HEIGHT = SCREEN_HEIGHT * 0.8f;
 constexpr glm::mat4 IDENTITY_4X4 = glm::mat4(1.0f);
 
 Camera MainCamera(glm::vec3(0.0f, 0.0f, 3.0f));
@@ -31,6 +34,7 @@ void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
 void MouseMovementCallback(GLFWwindow* window, double xPos, double yPos);
 void MouseScrollCallback(GLFWwindow* window, double xOffset, double yOffset);
 void UpdateDeltaTime();
+void DrawGui();
 void ShutdownRenderer();
 void ProcessInput(GLFWwindow* window);
 void PrintErrors();
@@ -71,16 +75,6 @@ int main() {
 		//
 		// Rendering
 		//
-
-		// Imgui setup
-		ImGui_ImplOpenGL3_NewFrame();
-		ImGui_ImplGlfw_NewFrame();
-		ImGui::NewFrame();
-		ImGui::SetNextWindowSize(ImVec2(SCREEN_WIDTH, 0.f));
-		ImGui::SetNextWindowPos(ImVec2(0.f, 0.f));
-		ImGui::Begin("Main Window");
-		ImGui::End();
-
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -109,7 +103,8 @@ int main() {
 		lightShaderProgram.SetMat4("model", lightModelMatrix);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
-		// Imgui rendering
+		// Draw the GUI
+		DrawGui();
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		
@@ -142,7 +137,6 @@ GLFWwindow* InitalizeWindow() {
 	glfwSetCursorPosCallback(window, MouseMovementCallback);
 	glfwSetScrollCallback(window, MouseScrollCallback);
 
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
 		std::cout << "Failed to initialize GLAD\n";
@@ -186,6 +180,14 @@ void FramebufferSizeCallback(GLFWwindow* window, int width, int height) {
 }
 
 void MouseMovementCallback(GLFWwindow* window, double xPos, double yPos) {
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) != GLFW_PRESS) {
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		FirstMouseMovement = true;
+		return;
+	}
+
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
 	float xPosFloat = static_cast<float>(xPos);
 	float yPosFloat = static_cast<float>(yPos);
 
@@ -212,6 +214,33 @@ void UpdateDeltaTime() {
 	float currentTime = static_cast<float>(glfwGetTime());
 	DeltaTime = currentTime - TimeLastFrame;
 	TimeLastFrame = currentTime;
+}
+
+void DrawGui() {
+	ImGui_ImplOpenGL3_NewFrame();
+	ImGui_ImplGlfw_NewFrame();
+	ImGui::NewFrame();
+
+	ImGui::SetNextWindowSize(ImVec2(SCREEN_WIDTH, 0.f));
+	ImGui::SetNextWindowPos(ImVec2(0.f, 0.f));
+	ImGui::Begin("Main Window", nullptr, ImGuiWindowFlags_NoTitleBar);
+
+	if (ImGui::Button("Open Model")) {
+		IGFD::FileDialogConfig config;
+		config.path = ".";
+		ImGui::SetNextWindowSize(ImVec2(DIALOG_WIDTH, DIALOG_HEIGHT));
+		ImGuiFileDialog::Instance()->OpenDialog("OpenModelDialog", "Open Model", ".obj", config);
+	}
+	if (ImGuiFileDialog::Instance()->Display("OpenModelDialog")) {
+		if (ImGuiFileDialog::Instance()->IsOk()) {
+			std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
+			std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
+			std::cout << "Object Selected: " << ImGuiFileDialog::Instance()->GetCurrentFileName() << " at " << filePathName << "\n";
+			ImGuiFileDialog::Instance()->Close();
+		}
+	}
+
+	ImGui::End();
 }
 
 void ShutdownRenderer() {
