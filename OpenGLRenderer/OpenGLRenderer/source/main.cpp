@@ -17,8 +17,8 @@
 
 constexpr uint32_t SCREEN_WIDTH = 800;
 constexpr uint32_t SCREEN_HEIGHT = 600;
-constexpr uint32_t DIALOG_WIDTH = SCREEN_WIDTH * 0.8f;
-constexpr uint32_t DIALOG_HEIGHT = SCREEN_HEIGHT * 0.8f;
+constexpr uint32_t DIALOG_WIDTH = static_cast<uint32_t>(SCREEN_WIDTH * 0.8);
+constexpr uint32_t DIALOG_HEIGHT = static_cast<uint32_t>(SCREEN_HEIGHT * 0.8);
 constexpr glm::mat4 IDENTITY_4X4 = glm::mat4(1.0f);
 
 Camera MainCamera(glm::vec3(0.0f, 0.0f, 3.0f));
