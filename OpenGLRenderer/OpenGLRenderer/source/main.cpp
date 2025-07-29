@@ -30,6 +30,8 @@ GLuint GetTexture(const char* source, bool flip = true);
 void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
 void MouseMovementCallback(GLFWwindow* window, double xPos, double yPos);
 void MouseScrollCallback(GLFWwindow* window, double xOffset, double yOffset);
+void UpdateDeltaTime();
+void ShutdownRenderer();
 void ProcessInput(GLFWwindow* window);
 void PrintErrors();
 
@@ -41,7 +43,7 @@ int main() {
 	
 	// Models
 	GLuint containerVAO = GetContainerVAO();
-	glm::mat4 cubeModelMatrix = IDENTITY_4X4;
+	glm::mat4 containerModelMatrix = IDENTITY_4X4;
 
 	GLuint lightCubeVAO = GetCubeVAO();
 	glm::mat4 lightModelMatrix = glm::translate(IDENTITY_4X4, glm::vec3(1.2f, 1.0f, 2.0f));
@@ -61,20 +63,24 @@ int main() {
 
 	while (!glfwWindowShouldClose(window)) {
 		//
-		// Calculate DeltaTime
+		// Framestart 
 		//
-		float currentTime = static_cast<float>(glfwGetTime());
-		DeltaTime = currentTime - TimeLastFrame;
-		TimeLastFrame = currentTime;
-		
-		//
-		// Input
-		//
+		UpdateDeltaTime();
 		ProcessInput(window);
 		
 		//
 		// Rendering
 		//
+
+		// Imgui setup
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+		ImGui::SetNextWindowSize(ImVec2(SCREEN_WIDTH, 0.f));
+		ImGui::SetNextWindowPos(ImVec2(0.f, 0.f));
+		ImGui::Begin("Main Window");
+		ImGui::End();
+
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -88,7 +94,7 @@ int main() {
 		containerShaderProgram.SetVec3("lightColor", lightColor);
 
 		glBindVertexArray(containerVAO);
-		containerShaderProgram.SetMat4("model", cubeModelMatrix);
+		containerShaderProgram.SetMat4("model", containerModelMatrix);
 		glBindTextureUnit(0, containerTexture);
 		glBindTextureUnit(1, awesomeFaceTexture);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -102,6 +108,10 @@ int main() {
 		glBindVertexArray(lightCubeVAO);
 		lightShaderProgram.SetMat4("model", lightModelMatrix);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		// Imgui rendering
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		
 		//
 		// Swap Buffers and Poll Events
@@ -109,9 +119,9 @@ int main() {
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
+
+	ShutdownRenderer();
 	
-	PrintErrors();
-	glfwTerminate();
 	return 0;
 }
 
@@ -138,6 +148,13 @@ GLFWwindow* InitalizeWindow() {
 		std::cout << "Failed to initialize GLAD\n";
 		return nullptr;
 	}
+
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO();
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+	ImGui_ImplGlfw_InitForOpenGL(window, true);
+	ImGui_ImplOpenGL3_Init();
 
 	return window;
 }
@@ -184,11 +201,25 @@ void MouseMovementCallback(GLFWwindow* window, double xPos, double yPos) {
 	LastMouseX = xPosFloat;
 	LastMouseY = yPosFloat;
 
-	MainCamera.ProcessMouseMovement(xOffset, yOffset);
+	MainCamera.ProcessMouseMovement(xOffset, yOffset, true);
 }
 
 void MouseScrollCallback(GLFWwindow* window, double xOffset, double yOffset) {
 	MainCamera.ProcessMouseScroll(static_cast<float>(yOffset));
+}
+
+void UpdateDeltaTime() {
+	float currentTime = static_cast<float>(glfwGetTime());
+	DeltaTime = currentTime - TimeLastFrame;
+	TimeLastFrame = currentTime;
+}
+
+void ShutdownRenderer() {
+	PrintErrors();
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
+	glfwTerminate();
 }
 
 void ProcessInput(GLFWwindow* window) {
