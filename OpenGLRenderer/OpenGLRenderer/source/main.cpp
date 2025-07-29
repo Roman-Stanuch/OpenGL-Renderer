@@ -4,13 +4,13 @@
 #include "ImGuiFileDialog/ImGuiFileDialog.h"
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
-#include "stb/stb_image.h"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
 #include "Shader.h"
 #include "Camera.h"
 #include "Geometry.h"
+#include "Texture.h"
 
 #include <iostream>
 #include <cstdint>
@@ -29,7 +29,6 @@ float DeltaTime = 0.0f;
 float TimeLastFrame = 0.0f;
 
 GLFWwindow* InitalizeWindow();
-GLuint GetTexture(const char* source, bool flip = true);
 void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
 void MouseMovementCallback(GLFWwindow* window, double xPos, double yPos);
 void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
@@ -52,8 +51,8 @@ int main() {
 	glm::vec3 lightColor(1.0f, 1.0f, 1.0f);
 	
 	// Textures
-	GLuint containerTexture = GetTexture("textures/container.jpg");
-	GLuint awesomeFaceTexture = GetTexture("textures/awesomeface.png");
+	Texture containerTexture("textures/container.jpg");
+	Texture awesomeFaceTexture("textures/awesomeface.png");
 
 	// Shaders
 	Shader containerShaderProgram("shaders/BasicTexture.vert", "shaders/BasicLighting.frag");
@@ -86,8 +85,8 @@ int main() {
 
 		glBindVertexArray(containerVAO);
 		containerShaderProgram.SetMat4("model", containerModelMatrix);
-		glBindTextureUnit(0, containerTexture);
-		glBindTextureUnit(1, awesomeFaceTexture);
+		containerTexture.Activate(0);
+		awesomeFaceTexture.Activate(1);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		// Draw the GUI
@@ -139,28 +138,6 @@ GLFWwindow* InitalizeWindow() {
 	ImGui_ImplOpenGL3_Init();
 
 	return window;
-}
-
-GLuint GetTexture(const char* source, bool flip) {
-	GLuint texture = 0;
-	int width;
-	int height;
-	int numberOfChannels;
-	stbi_set_flip_vertically_on_load(flip);
-	unsigned char* data = stbi_load(source, &width, &height, &numberOfChannels, 0);
-	if (data) {
-		glGenTextures(1, &texture);
-		glBindTexture(GL_TEXTURE_2D, texture);
-		GLuint textureType = (numberOfChannels == 3) ? GL_RGB : GL_RGBA;
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, textureType, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-	else {
-		std::cout << "ERROR: Failed to load texture\n";
-	}
-	stbi_image_free(data);
-
-	return texture;
 }
 
 void FramebufferSizeCallback(GLFWwindow* window, int width, int height) {

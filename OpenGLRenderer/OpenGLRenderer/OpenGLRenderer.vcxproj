@@ -150,12 +150,14 @@
     <ClCompile Include="source\main.cpp" />
     <ClCompile Include="source\Shader.cpp" />
     <ClCompile Include="source\stb_init.cpp" />
+    <ClCompile Include="source\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\stb\stb_image.h" />
     <ClInclude Include="source\Camera.h" />
     <ClInclude Include="source\Geometry.h" />
     <ClInclude Include="source\Shader.h" />
+    <ClInclude Include="source\Texture.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
