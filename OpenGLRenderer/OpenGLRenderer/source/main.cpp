@@ -9,8 +9,7 @@
 
 #include "Shader.h"
 #include "Camera.h"
-#include "Geometry.h"
-#include "Mesh.h"
+#include "Model.h"
 
 #include <iostream>
 #include <cstdint>
@@ -45,18 +44,15 @@ int main() {
 		return -1;
 	}
 	
-	// Models
-	uint32_t containerVAO = GetContainerVAO();
-	glm::mat4 containerModelMatrix = IDENTITY_4X4;
+	// Model
 	glm::vec3 lightColor(1.0f, 1.0f, 1.0f);
-
-	// Textures
-	Texture containerTexture("textures/container.jpg");
-	Texture awesomeFaceTexture("textures/awesomeface.png");
+	Model loadedModel("models/backpack/backpack.obj");
+	glm::mat4 modelMatrix = IDENTITY_4X4;
+	modelMatrix = glm::translate(modelMatrix, glm::vec3(0.f, 0.f, 0.f));
+	modelMatrix = glm::scale(modelMatrix, glm::vec3(1.f, 1.f, 1.f));
 
 	// Shaders
-	Shader containerShaderProgram("shaders/BasicTexture.vert", "shaders/BasicLighting.frag");
-	Shader lightShaderProgram("shaders/BasicColor.vert", "shaders/BasicColor.frag");
+	Shader modelShaderProgram("shaders/BasicTexture.vert", "shaders/BasicColor.frag");
 
 	glfwSwapInterval(1);
 	glEnable(GL_DEPTH_TEST);
@@ -78,16 +74,12 @@ int main() {
 		glm::mat4 projection = glm::perspective(glm::radians(MainCamera.GetZoom()), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f);
 
 		// Draw the container
-		containerShaderProgram.Use();
-		containerShaderProgram.SetMat4("view", view);
-		containerShaderProgram.SetMat4("projection", projection);
-		containerShaderProgram.SetVec3("lightColor", lightColor);
-
-		glBindVertexArray(containerVAO);
-		containerShaderProgram.SetMat4("model", containerModelMatrix);
-		containerTexture.Activate(0);
-		awesomeFaceTexture.Activate(1);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		modelShaderProgram.Use();
+		modelShaderProgram.SetMat4("view", view);
+		modelShaderProgram.SetMat4("projection", projection);
+		modelShaderProgram.SetVec3("lightColor", lightColor);
+		modelShaderProgram.SetMat4("model", modelMatrix);
+		loadedModel.Draw(modelShaderProgram);
 
 		// Draw the GUI
 		DrawGui();

@@ -10,13 +10,16 @@ Mesh::Mesh(std::vector<Vertex> vertices, std::vector<uint32_t> indices, std::vec
 }
 
 void Mesh::Draw(const Shader& shader) {
+	/*
 	for (int i = 0; i < textures.size(); i++) {
 		textures[i].Activate(i);
-	}
+	}*/
 
 	glBindVertexArray(VAO);
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
+
+	glActiveTexture(GL_TEXTURE0);
 }
 
 void Mesh::SetupMesh() {
