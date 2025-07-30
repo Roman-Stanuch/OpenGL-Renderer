@@ -1,4 +1,5 @@
 #include "Shader.h"
+#include "glad/glad.h"
 #include "glm/gtc/type_ptr.hpp"
 
 #include <fstream>
@@ -81,7 +82,7 @@ void Shader::SetMat4(const char* name, const glm::mat4& value) const {
 	glUniformMatrix4fv(glGetUniformLocation(programId, name), 1, GL_FALSE, &value[0][0]);
 }
 
-bool Shader::CheckShaderCompilation(GLuint shader, const char* identifier) {
+bool Shader::CheckShaderCompilation(uint32_t shader, const char* identifier) {
 	int success;
 	glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
 	if (!success) {
@@ -94,7 +95,7 @@ bool Shader::CheckShaderCompilation(GLuint shader, const char* identifier) {
 	return true;
 }
 
-bool Shader::CheckProgramLinking(GLuint program) {
+bool Shader::CheckProgramLinking(uint32_t program) {
 	int success;
 	glGetProgramiv(program, GL_LINK_STATUS, &success);
 	if (!success) {

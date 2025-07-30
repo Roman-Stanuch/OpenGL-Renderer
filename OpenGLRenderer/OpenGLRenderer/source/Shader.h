@@ -1,7 +1,8 @@
 #pragma once
 
-#include "glad/glad.h"
 #include "glm/glm.hpp"
+
+#include <cstdint>
 
 class Shader {
 public:
@@ -20,9 +21,9 @@ public:
 	void SetMat4(const char* name, const glm::mat4& value) const;
 
 private:
-	bool CheckShaderCompilation(GLuint shader, const char* identifier);
+	bool CheckShaderCompilation(uint32_t shader, const char* identifier);
 
-	bool CheckProgramLinking(GLuint program);
+	bool CheckProgramLinking(uint32_t program);
 
-	GLuint programId;
+	uint32_t programId;
 };

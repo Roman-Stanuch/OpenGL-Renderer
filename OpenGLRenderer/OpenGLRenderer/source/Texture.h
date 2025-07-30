@@ -1,13 +1,13 @@
 #pragma once
 
-#include "GLFW/glfw3.h"
+#include <cstdint>
 
 class Texture {
 public:
 	Texture(const char* source, bool flip = true);
 	
-	void Activate(GLuint textureUnit = 0);
+	void Activate(uint32_t textureUnit = 0);
 
 private:
-	GLuint id;
+	uint32_t id;
 };

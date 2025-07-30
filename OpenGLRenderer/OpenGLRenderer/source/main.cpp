@@ -10,7 +10,7 @@
 #include "Shader.h"
 #include "Camera.h"
 #include "Geometry.h"
-#include "Texture.h"
+#include "Mesh.h"
 
 #include <iostream>
 #include <cstdint>
@@ -46,10 +46,10 @@ int main() {
 	}
 	
 	// Models
-	GLuint containerVAO = GetContainerVAO();
+	uint32_t containerVAO = GetContainerVAO();
 	glm::mat4 containerModelMatrix = IDENTITY_4X4;
 	glm::vec3 lightColor(1.0f, 1.0f, 1.0f);
-	
+
 	// Textures
 	Texture containerTexture("textures/container.jpg");
 	Texture awesomeFaceTexture("textures/awesomeface.png");

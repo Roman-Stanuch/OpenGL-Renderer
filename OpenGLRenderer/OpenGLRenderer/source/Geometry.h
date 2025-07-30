@@ -1,7 +1,7 @@
 #pragma once
 
-#include "glfw/glfw3.h"
+#include <cstdint>
 
-GLuint GetCubeVAO();
+uint32_t GetCubeVAO();
 
-GLuint GetContainerVAO();
+uint32_t GetContainerVAO();

@@ -148,6 +148,7 @@
     <ClCompile Include="source\Geometry.cpp" />
     <ClCompile Include="source\glad.c" />
     <ClCompile Include="source\main.cpp" />
+    <ClCompile Include="source\Mesh.cpp" />
     <ClCompile Include="source\Shader.cpp" />
     <ClCompile Include="source\stb_init.cpp" />
     <ClCompile Include="source\Texture.cpp" />
@@ -156,6 +157,7 @@
     <ClInclude Include="include\stb\stb_image.h" />
     <ClInclude Include="source\Camera.h" />
     <ClInclude Include="source\Geometry.h" />
+    <ClInclude Include="source\Mesh.h" />
     <ClInclude Include="source\Shader.h" />
     <ClInclude Include="source\Texture.h" />
   </ItemGroup>

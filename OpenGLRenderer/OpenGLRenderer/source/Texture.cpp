@@ -1,5 +1,5 @@
-#include "glad/glad.h"
 #include "Texture.h"
+#include "glad/glad.h"
 #include "stb/stb_image.h"
 
 #include <iostream>
@@ -24,6 +24,6 @@ Texture::Texture(const char* source, bool flip) {
 	stbi_image_free(data);
 }
 
-void Texture::Activate(GLuint textureUnit) {
+void Texture::Activate(uint32_t textureUnit) {
 	glBindTextureUnit(textureUnit, id);
 }
