@@ -14,19 +14,21 @@
 #include <iostream>
 #include <cstdint>
 
-constexpr uint32_t SCREEN_WIDTH = 800;
-constexpr uint32_t SCREEN_HEIGHT = 600;
+constexpr uint32_t SCREEN_WIDTH = 1920;
+constexpr uint32_t SCREEN_HEIGHT = 1080;
 constexpr uint32_t DIALOG_WIDTH = static_cast<uint32_t>(SCREEN_WIDTH * 0.8);
 constexpr uint32_t DIALOG_HEIGHT = static_cast<uint32_t>(SCREEN_HEIGHT * 0.8);
 constexpr glm::mat4 IDENTITY_4X4 = glm::mat4(1.0f);
 
 Camera MainCamera(glm::vec3(0.0f, 0.0f, 3.0f));
-Model* LoadedModel = nullptr;
 bool FirstMouseMovement = true;
 float LastMouseX;
 float LastMouseY;
 float DeltaTime = 0.0f;
 float TimeLastFrame = 0.0f;
+
+Model* LoadedModel = nullptr;
+bool FlipModelTextures = false;
 
 GLFWwindow* InitalizeWindow();
 void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
@@ -55,6 +57,7 @@ int main() {
 
 	glfwSwapInterval(1);
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
 
 	while (!glfwWindowShouldClose(window)) {
 		//
@@ -184,23 +187,29 @@ void DrawGui() {
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
 
+	// Window
 	ImGui::SetNextWindowSize(ImVec2(SCREEN_WIDTH, 0.f));
 	ImGui::SetNextWindowPos(ImVec2(0.f, 0.f));
 	ImGui::Begin("Main Window", nullptr, ImGuiWindowFlags_NoTitleBar);
 
+	// Header Buttons 
 	if (ImGui::Button("Open Model")) {
 		IGFD::FileDialogConfig config;
 		config.path = ".";
 		ImGui::SetNextWindowSize(ImVec2(DIALOG_WIDTH, DIALOG_HEIGHT));
 		ImGuiFileDialog::Instance()->OpenDialog("OpenModelDialog", "Open Model", ".obj,.fbx", config);
 	}
+	
+	ImGui::Checkbox("Flip Textures", &FlipModelTextures);
+	
+	// File Dialog
 	if (ImGuiFileDialog::Instance()->Display("OpenModelDialog")) {
 		if (ImGuiFileDialog::Instance()->IsOk()) {
 			std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
 			if (LoadedModel != nullptr) {
 				delete LoadedModel;
 			}
-			LoadedModel = new Model(filePathName);
+			LoadedModel = new Model(filePathName, FlipModelTextures);
 			ImGuiFileDialog::Instance()->Close();
 		}
 

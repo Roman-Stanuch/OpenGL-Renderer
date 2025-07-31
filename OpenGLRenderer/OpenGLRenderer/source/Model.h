@@ -10,7 +10,7 @@
 
 class Model {
 public:
-	Model(const std::string& path);
+	Model(const std::string& path, bool flipTextures = true);
 
 	void Draw(const Shader& shader);
 
@@ -19,6 +19,8 @@ private:
 	std::vector<Texture> loadedTextures;
 
 	std::string directory;
+
+	bool flipTextures;
 
 	void ProcessNode(aiNode* node, const aiScene* scene);
 

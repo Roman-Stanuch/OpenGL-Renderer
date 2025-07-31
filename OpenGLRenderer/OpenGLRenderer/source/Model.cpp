@@ -5,7 +5,7 @@
 #include <iostream>
 #include <cstdint>
 
-Model::Model(const std::string& path) {
+Model::Model(const std::string& path, bool flipTextures) {
 	Assimp::Importer importer;
 
 	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
@@ -15,6 +15,7 @@ Model::Model(const std::string& path) {
 	}
 
 	directory = path.substr(0, path.find_last_of('\\'));
+	this->flipTextures = flipTextures;
 
 	ProcessNode(scene->mRootNode, scene);
 }
@@ -96,7 +97,7 @@ std::vector<Texture> Model::LoadMaterialTextures(aiMaterial* material, aiTexture
 		// Texture not loaded, load it
 		if (!skip) {
 			std::string texturePath = directory + '/' + name.C_Str();
-			Texture texture(texturePath.c_str(), false);
+			Texture texture(texturePath.c_str(), flipTextures);
 			texture.SetFileName(name.C_Str());
 			textures.push_back(texture);
 			loadedTextures.push_back(texture);
