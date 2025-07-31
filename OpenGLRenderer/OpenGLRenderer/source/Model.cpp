@@ -14,7 +14,7 @@ Model::Model(const std::string& path) {
 		return;
 	}
 
-	directory = path.substr(0, path.find_last_of("/"));
+	directory = path.substr(0, path.find_last_of('\\'));
 
 	ProcessNode(scene->mRootNode, scene);
 }
@@ -70,12 +70,10 @@ Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene) {
 		}
 	}
 	
-	/*
 	if (mesh->mMaterialIndex >= 0) {
 		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 		textures = LoadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
 	}
-	std::cout << "done";*/
 	return Mesh(vertices, indices, textures);
 }
 
@@ -84,9 +82,25 @@ std::vector<Texture> Model::LoadMaterialTextures(aiMaterial* material, aiTexture
 	for (int i = 0; i < material->GetTextureCount(type); i++) {
 		aiString name;
 		material->GetTexture(type, i, &name);
-		std::string texturePath = directory + '/' + name.C_Str();
-		Texture texture(texturePath.c_str());
-		textures.push_back(texture);
+		
+		// Check if texture was already loaded
+		bool skip = false;
+		for (const Texture& loadedTexture : loadedTextures) {
+			if (std::strcmp(loadedTexture.GetFileName().data(), name.C_Str()) == 0) {
+				textures.push_back(loadedTexture);
+				skip = true;
+				break;
+			}
+		}
+		
+		// Texture not loaded, load it
+		if (!skip) {
+			std::string texturePath = directory + '/' + name.C_Str();
+			Texture texture(texturePath.c_str(), false);
+			texture.SetFileName(name.C_Str());
+			textures.push_back(texture);
+			loadedTextures.push_back(texture);
+		}
 	}
 	
 	return textures;

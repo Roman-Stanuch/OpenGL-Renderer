@@ -21,6 +21,7 @@ constexpr uint32_t DIALOG_HEIGHT = static_cast<uint32_t>(SCREEN_HEIGHT * 0.8);
 constexpr glm::mat4 IDENTITY_4X4 = glm::mat4(1.0f);
 
 Camera MainCamera(glm::vec3(0.0f, 0.0f, 3.0f));
+Model* LoadedModel = nullptr;
 bool FirstMouseMovement = true;
 float LastMouseX;
 float LastMouseY;
@@ -44,15 +45,13 @@ int main() {
 		return -1;
 	}
 	
-	// Model
-	glm::vec3 lightColor(1.0f, 1.0f, 1.0f);
-	Model loadedModel("models/backpack/backpack.obj");
+	// Model transforms
 	glm::mat4 modelMatrix = IDENTITY_4X4;
 	modelMatrix = glm::translate(modelMatrix, glm::vec3(0.f, 0.f, 0.f));
 	modelMatrix = glm::scale(modelMatrix, glm::vec3(1.f, 1.f, 1.f));
 
 	// Shaders
-	Shader modelShaderProgram("shaders/BasicTexture.vert", "shaders/BasicColor.frag");
+	Shader modelShaderProgram("shaders/BasicTexture.vert", "shaders/BasicTexture.frag");
 
 	glfwSwapInterval(1);
 	glEnable(GL_DEPTH_TEST);
@@ -77,9 +76,10 @@ int main() {
 		modelShaderProgram.Use();
 		modelShaderProgram.SetMat4("view", view);
 		modelShaderProgram.SetMat4("projection", projection);
-		modelShaderProgram.SetVec3("lightColor", lightColor);
 		modelShaderProgram.SetMat4("model", modelMatrix);
-		loadedModel.Draw(modelShaderProgram);
+		if (LoadedModel != nullptr) {
+			LoadedModel->Draw(modelShaderProgram);
+		}
 
 		// Draw the GUI
 		DrawGui();
@@ -192,13 +192,15 @@ void DrawGui() {
 		IGFD::FileDialogConfig config;
 		config.path = ".";
 		ImGui::SetNextWindowSize(ImVec2(DIALOG_WIDTH, DIALOG_HEIGHT));
-		ImGuiFileDialog::Instance()->OpenDialog("OpenModelDialog", "Open Model", ".obj", config);
+		ImGuiFileDialog::Instance()->OpenDialog("OpenModelDialog", "Open Model", ".obj,.fbx", config);
 	}
 	if (ImGuiFileDialog::Instance()->Display("OpenModelDialog")) {
 		if (ImGuiFileDialog::Instance()->IsOk()) {
 			std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
-			std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
-			std::cout << "Object Selected: " << ImGuiFileDialog::Instance()->GetCurrentFileName() << " at " << filePathName << "\n";
+			if (LoadedModel != nullptr) {
+				delete LoadedModel;
+			}
+			LoadedModel = new Model(filePathName);
 			ImGuiFileDialog::Instance()->Close();
 		}
 

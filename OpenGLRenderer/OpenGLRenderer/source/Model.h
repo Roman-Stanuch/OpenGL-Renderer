@@ -16,6 +16,7 @@ public:
 
 private:
 	std::vector<Mesh> meshes;
+	std::vector<Texture> loadedTextures;
 
 	std::string directory;
 
