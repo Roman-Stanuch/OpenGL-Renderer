@@ -197,7 +197,7 @@ void DrawGui() {
 		IGFD::FileDialogConfig config;
 		config.path = ".";
 		ImGui::SetNextWindowSize(ImVec2(DIALOG_WIDTH, DIALOG_HEIGHT));
-		ImGuiFileDialog::Instance()->OpenDialog("OpenModelDialog", "Open Model", ".obj,.fbx", config);
+		ImGuiFileDialog::Instance()->OpenDialog("OpenModelDialog", "Open Model", ".obj", config);
 	}
 	
 	ImGui::Checkbox("Flip Textures", &FlipModelTextures);
