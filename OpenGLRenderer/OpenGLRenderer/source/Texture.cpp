@@ -19,7 +19,7 @@ Texture::Texture(const char* source, bool flip) {
 		glGenerateMipmap(GL_TEXTURE_2D);
 	}
 	else {
-		std::cout << "ERROR: Failed to load texture\n";
+		std::cout << "ERROR: Failed to load texture at " << source << "\n";
 	}
 	stbi_image_free(data);
 }
