@@ -23,6 +23,8 @@ public:
 
 	float GetZoom() const { return zoom; }
 
+	void SetSpeed(float speed) { movementSpeed = speed; }
+
 private:
 	glm::vec3 position;
 	glm::vec3 front;

@@ -21,6 +21,7 @@ constexpr uint32_t DIALOG_HEIGHT = static_cast<uint32_t>(SCREEN_HEIGHT * 0.8);
 constexpr glm::mat4 IDENTITY_4X4 = glm::mat4(1.0f);
 
 Camera MainCamera(glm::vec3(0.0f, 0.0f, 3.0f));
+float CameraSpeed = 2.5f;
 bool FirstMouseMovement = true;
 float LastMouseX;
 float LastMouseY;
@@ -28,7 +29,8 @@ float DeltaTime = 0.0f;
 float TimeLastFrame = 0.0f;
 
 Model* LoadedModel = nullptr;
-bool FlipModelTextures = false;
+bool FlipModelTextures = true;
+bool CullBackfaces = true;
 
 GLFWwindow* InitalizeWindow();
 void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
@@ -57,7 +59,6 @@ int main() {
 
 	glfwSwapInterval(1);
 	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
 
 	while (!glfwWindowShouldClose(window)) {
 		//
@@ -192,7 +193,9 @@ void DrawGui() {
 	ImGui::SetNextWindowPos(ImVec2(0.f, 0.f));
 	ImGui::Begin("Main Window", nullptr, ImGuiWindowFlags_NoTitleBar);
 
-	// Header Buttons 
+	// Header Items
+	ImGui::PushItemWidth(SCREEN_WIDTH / 8);
+
 	if (ImGui::Button("Open Model")) {
 		IGFD::FileDialogConfig config;
 		config.path = ".";
@@ -200,7 +203,24 @@ void DrawGui() {
 		ImGuiFileDialog::Instance()->OpenDialog("OpenModelDialog", "Open Model", ".obj", config);
 	}
 	
+	ImGui::SameLine(0.f, SCREEN_WIDTH / 20);
 	ImGui::Checkbox("Flip Textures", &FlipModelTextures);
+
+	ImGui::SameLine(0.f, SCREEN_WIDTH / 20);
+	ImGui::Checkbox("Cull Backfaces", &CullBackfaces);
+	if (CullBackfaces) {
+		glEnable(GL_CULL_FACE);
+	}
+	else {
+		glDisable(GL_CULL_FACE);
+	}
+
+	ImGui::SameLine(0.f, SCREEN_WIDTH / 20);
+	ImGui::SliderFloat("Camera Speed", &CameraSpeed, 0.f, 100.f);
+	MainCamera.SetSpeed(CameraSpeed);
+
+
+	ImGui::PopItemWidth();
 	
 	// File Dialog
 	if (ImGuiFileDialog::Instance()->Display("OpenModelDialog")) {
